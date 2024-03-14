@@ -19,6 +19,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Controller
@@ -42,6 +43,24 @@ public class PrimeiraChamadaREST {
 
         return ResponseEntity.ok().body(
                 repositorio.save(usuario)
+        );
+    }
+
+    @GetMapping("/{id}")
+    @ResponseBody
+    public ResponseEntity<Usuario> primeitoSelect(
+            @PathVariable Long id
+    ) {
+        return ResponseEntity.ok().body(
+                repositorio.findById(id).get()
+        );
+    }
+
+    @GetMapping("/todos")
+    @ResponseBody
+    public ResponseEntity<List<Usuario>> segundoSelect() {
+        return ResponseEntity.ok().body(
+                repositorio.findAll()
         );
     }
 
