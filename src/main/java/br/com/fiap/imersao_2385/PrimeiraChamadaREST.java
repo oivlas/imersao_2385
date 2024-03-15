@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/primeira_chamada")
@@ -51,17 +52,80 @@ public class PrimeiraChamadaREST {
     public ResponseEntity<Usuario> primeitoSelect(
             @PathVariable Long id
     ) {
-        return ResponseEntity.ok().body(
-                repositorio.findById(id).get()
-        );
+        Optional<Usuario> usuario = repositorio.findById(id);
+
+        if (usuario.isPresent()) {
+            return ResponseEntity.ok().body(
+                    usuario.get()
+            );
+        } else {
+            return ResponseEntity.status(204).build();
+        }
     }
 
     @GetMapping("/todos")
     @ResponseBody
     public ResponseEntity<List<Usuario>> segundoSelect() {
-        return ResponseEntity.ok().body(
-                repositorio.findAll()
-        );
+        List<Usuario> usuarios = repositorio.findAll();
+
+        if (usuarios.isEmpty()) {
+            return ResponseEntity.status(204).build();
+        } else {
+            return ResponseEntity.ok().body(
+                    usuarios
+            );
+        }
+    }
+
+    @PatchMapping("/{id}")
+    @ResponseBody
+    public ResponseEntity<Usuario> atualizarSobrenome(
+        @PathVariable Long id,
+        @RequestParam String sobrenome
+    ) {
+        Optional<Usuario> usuario = repositorio.findById(id);
+
+        if (usuario.isPresent()) {
+            String nome = usuario.get().getNomeCompleto().split(" ")[0];
+
+            usuario.get().setNomeCompleto(nome + " " + sobrenome);
+
+            return ResponseEntity.ok().body(repositorio.save(usuario.get()));
+        } else {
+            return ResponseEntity.unprocessableEntity().build();
+        }
+    }
+
+    @PutMapping("/{id}")
+    @ResponseBody
+    public ResponseEntity<Usuario> atualizarEntidade(
+            @PathVariable Long id,
+            @Valid @RequestBody ContratoEntrada contratoEntrada
+    ) {
+        Optional<Usuario> usuario = repositorio.findById(id);
+
+        if (usuario.isPresent()) {
+            usuario.get().setNomeCompleto(contratoEntrada.getNome() + " " + contratoEntrada.getSobrenome());
+
+            return ResponseEntity.ok().body(repositorio.save(usuario.get()));
+        } else {
+            return ResponseEntity.unprocessableEntity().build();
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity deletasEntidade(
+            @PathVariable Long id
+    ) {
+        Optional<Usuario> usuario = repositorio.findById(id);
+
+        if (usuario.isPresent()) {
+            repositorio.delete(usuario.get());
+
+            return ResponseEntity.accepted().build();
+        } else {
+            return ResponseEntity.unprocessableEntity().build();
+        }
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)

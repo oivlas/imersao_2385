@@ -21,32 +21,75 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/login")
 public class MyAssistREST {
+
     @Autowired
-    UsuarioRepository repositorio;
+    LoginRepository repository;
 
     @PostMapping("/cadastrar")
-    public ResponseEntity cadastrarUsuario(@Valid @RequestBody Login login) {
-        UsuarioEntity entidade = new UsuarioEntity();
+    @ResponseBody
+    public ResponseEntity<LoginEntity> cadastrarLogin(@Valid @RequestBody LoginDTO dto) {
+        LoginEntity entity = new LoginEntity();
 
-        entidade.setLogin(login.getLogin());
-        entidade.setSenha(login.getSenha());
+        entity.setLogin(dto.getLogin());
+        entity.setSenha(dto.getSenha());
 
-        return ResponseEntity.status(201).body(repositorio.save(entidade));
+        return ResponseEntity.status(201).body(
+                repository.save(entity)
+        );
     }
 
-    @GetMapping("/{login}/{senha}")
+    @PutMapping("/cadastrar/{id}")
     @ResponseBody
-    public ResponseEntity<UsuarioEntity> consultaPorLogin(
-            @PathVariable String login,
-            @PathVariable String senha
+    public ResponseEntity<LoginEntity> sobrescreverLogin(
+            @PathVariable Long id,
+            @Valid @RequestBody LoginDTO dto
     ) {
-        return ResponseEntity.ok().body(
-                repositorio.findByLoginAndSenha(login, senha)
-        );
+        Optional<LoginEntity> entity = repository.findById(id);
+
+        if (entity.isPresent()) {
+            entity.get().setSenha(dto.getSenha());
+            entity.get().setLogin(dto.getLogin());
+
+            return ResponseEntity.accepted().body(
+                    repository.save(entity.get())
+            );
+        } else {
+            return ResponseEntity.unprocessableEntity().body(null);
+        }
+    }
+
+    @DeleteMapping("/cadastrar/{id}")
+    public ResponseEntity deletarLogin(
+            @PathVariable Long id
+    ) {
+        Optional<LoginEntity> entity = repository.findById(id);
+
+        if (entity.isPresent()) {
+            repository.delete(entity.get());
+
+            return ResponseEntity.accepted().build();
+        } else {
+            return ResponseEntity.unprocessableEntity().build();
+        }
+    }
+
+    @GetMapping("/autenticacao")
+    public ResponseEntity autenticarLogin(
+            @RequestParam String login,
+            @RequestParam String senha
+    ) {
+        Optional<LoginEntity> entity = repository.findByLoginAndSenha(login, senha);
+
+        if (entity.isPresent()) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(401).build();
+        }
     }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -66,7 +109,7 @@ public class MyAssistREST {
 
 @Getter
 @Setter
-class Login{
+class LoginDTO {
     @NotBlank
     private String login;
 
@@ -76,7 +119,7 @@ class Login{
 
 @Entity
 @Data
-class UsuarioEntity{
+class LoginEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
@@ -87,6 +130,6 @@ class UsuarioEntity{
 }
 
 @Repository
-interface UsuarioRepository extends JpaRepository<UsuarioEntity, Long>{
-    UsuarioEntity findByLoginAndSenha(String login, String senha);
+interface LoginRepository extends JpaRepository<LoginEntity, Long>{
+    Optional<LoginEntity> findByLoginAndSenha(String login, String senha);
 }
