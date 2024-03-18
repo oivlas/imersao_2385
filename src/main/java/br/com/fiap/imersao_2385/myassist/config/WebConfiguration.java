@@ -1,4 +1,4 @@
-package br.com.fiap.imersao_2385;
+package br.com.fiap.imersao_2385.myassist.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
