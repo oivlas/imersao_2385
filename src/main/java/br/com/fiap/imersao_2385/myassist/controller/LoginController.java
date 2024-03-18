@@ -1,20 +1,13 @@
-package br.com.fiap.imersao_2385;
+package br.com.fiap.imersao_2385.myassist.controller;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import br.com.fiap.imersao_2385.myassist.controller.dto.LoginDTO;
+import br.com.fiap.imersao_2385.myassist.entity.LoginEntity;
+import br.com.fiap.imersao_2385.myassist.repository.LoginRepository;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.stereotype.Repository;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
@@ -25,8 +18,7 @@ import java.util.Optional;
 
 @Controller
 @RequestMapping("/login")
-public class MyAssistREST {
-
+public class LoginController {
     @Autowired
     LoginRepository repository;
 
@@ -105,31 +97,4 @@ public class MyAssistREST {
         });
         return errors;
     }
-}
-
-@Getter
-@Setter
-class LoginDTO {
-    @NotBlank
-    private String login;
-
-    @NotBlank
-    private String senha;
-}
-
-@Entity
-@Data
-class LoginEntity {
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Long id;
-
-    private String login;
-
-    private String senha;
-}
-
-@Repository
-interface LoginRepository extends JpaRepository<LoginEntity, Long>{
-    Optional<LoginEntity> findByLoginAndSenha(String login, String senha);
 }
